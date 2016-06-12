@@ -1,0 +1,16 @@
+[package]
+name = "diophantine"
+version = "0.1.0"
+authors = ["tiehuis <marctiehuis@gmail.com>"]
+
+description = "quadratic diophantine equation solving"
+documentation = "https://tiehuis.github.io/diophantine/diophantine"
+repository = "https://github.com/tiehuis/diophantine"
+keywords = ["diophantine", "quadratic", "solver"]
+license = "MIT/Apache"
+
+[dependencies]
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
