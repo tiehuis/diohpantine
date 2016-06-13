@@ -354,7 +354,97 @@ pub fn solve_parabolic(a: i64, b: i64, c: i64, d: i64, e: i64, f: i64) -> Soluti
 
 /// Solve a quadratic equation where `B^2 - 4AC > 0`.
 pub fn solve_hyperbolic(a: i64, b: i64, c: i64, d: i64, e: i64, f: i64) -> Solution {
-    unimplemented!()
+    match (a, b, c, d, e, f) {
+        (a, b, c, 0, 0, 0) => {
+            let mut sols = vec![(Form::Point(0), Form::Point(0))];
+
+            // determine any other solutions
+            if helper::is_perfect_sq(b*b - 4*a*c) {
+                // reduces into solving two linear equations
+                let ks = ((b*b - 4*a*c) as f64).sqrt() as i64;
+
+                // `2ax + (b - sqrt(b^2 - 4ac))y = 0`
+                match solve_linear(2*a, b - ks, 0) {
+                    Solution::Single(x, y) => sols.push((x, y)),
+                    _ => ()
+                }
+
+                // `2ax - (b - sqrt(b^2 - 4ac))y = 0`
+                match solve_linear(2*a, b + ks, 0) {
+                    Solution::Single(x, y) => sols.push((x, y)),
+                    _ => ()
+                }
+            }
+
+            map_solution_set(sols)
+        }
+
+        (a, b, c, 0, 0, f) if helper::is_perfect_sq(b*b - 4*a*c) => {
+            let mut sols = vec![(Form::Point(0), Form::Point(0))];
+            let k = ((b*b - 4*a*c) as f64).sqrt() as i64;
+
+            for divisor in helper::divisors(-4*a*f) {
+                let y = divisor + 4*a*f / divisor;
+                let x = divisor - (b + k) * y;
+
+                if x % (2*a) == 0 && y % (2*k) == 0 {
+                    sols.push((Form::Point(x / 2*a), Form::Point(y / 2*k)));
+                }
+            }
+
+            map_solution_set(sols)
+        }
+
+        (a, b, c, 0, 0, f) if !helper::is_perfect_sq(b*b - 4*a*c) => {
+            let g = gcd!(a, b, c);
+
+            if f % g != 0 {
+                Solution::None
+            }
+            else if 4*f*f >= b*b - 4*a*c {
+                // reduce equation by gcd
+                let a = a / g;
+                let b = b / g;
+                let c = c / g;
+                let f = f / g;
+
+                // as^2 + bs + c must be a multiple of f
+                for s in 0..f.abs()-1 {
+                    if (a*s*s + b*s + c) % f != 0 {
+                        continue;
+                    }
+
+                    // substitute s for `[-(as^2 + bs + c)/f]y^2 + (2sa + b)yz - afz^2 = 1`
+                    let ac = -(a*s*s + b*s + c)/f;
+                    let bc = 2*s*a + b;
+                    let cc = -a*f;
+
+                    // determine continued fraction expansion of the roots of
+                    // the specified equation.
+                    let leading = -bc;
+                    let root = bc*bc - 4*ac*cc;
+                    let den = 2*ac;
+
+                    let cfrac = helper::continued_fraction(leading, root, den);
+
+                    // we need to iterate through 2 cycles of the periodic part,
+                    // scanning the convergents for equality to 1
+                    // TODO: may require a big number library for accuracy
+                }
+
+                Solution::None
+            }
+            else {
+                Solution::None
+            }
+        }
+
+        // general quadratic equation
+        (a, b, c, d, e, f) => {
+            let g = helper::gcd(4*a*c - b*b, 2*a*e - b*d);
+            Solution::None
+        }
+    }
 }
 
 #[cfg(test)]

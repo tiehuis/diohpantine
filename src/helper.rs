@@ -2,30 +2,6 @@
 
 #![allow(dead_code)]
 
-macro_rules! gcd {
-    ($($x:expr),*) => {
-        {
-            let mut result = 0; // gcd(0, x) == x
-            $(
-                result = gcd(result, $x);
-            )*
-            result
-        }
-    };
-}
-
-macro_rules! lcm {
-    ($($x:expr),*) => {
-        {
-            let mut result = 1; // lcm(1, x) == x
-            $(
-                result = lcm(result, $x);
-            )*
-            result
-        }
-    };
-}
-
 /// Compute the gcd of two numbers
 pub fn gcd(mut x: i64, mut y: i64) -> i64 {
     assert!(x >= 0 && y >= 0);
@@ -59,10 +35,35 @@ pub fn gcd(mut x: i64, mut y: i64) -> i64 {
     x * (1 << result)
 }
 
+macro_rules! gcd {
+    ($($x:expr),*) => {
+        {
+            let mut result = 0; // gcd(0, x) == x
+            $(
+                result = ::helper::gcd(result, $x);
+            )*
+            result
+        }
+    };
+}
+
 /// Compute the lcm of two numbers
 pub fn lcm(x: i64, y: i64) -> i64 {
     x * y / gcd(x, y)
 }
+
+macro_rules! lcm {
+    ($($x:expr),*) => {
+        {
+            let mut result = 1; // lcm(1, x) == x
+            $(
+                result = ::helper::lcm(result, $x);
+            )*
+            result
+        }
+    };
+}
+
 
 /// Compute the extended gcd of two numbers.
 ///
@@ -128,6 +129,59 @@ pub fn quadratic_roots(a: i64, b: i64, c: i64) -> Option<(f64, f64)> {
         Some(((-b as f64 + discriminant.sqrt()) / (2*a) as f64,
               (-b as f64 - discriminant.sqrt()) / (2*a) as f64))
     }
+}
+
+/// Return the continued fraction expansion of a value of the form
+/// `(a + sqrt(b)) / c`. The returned value is of the form:
+///
+/// `(integer-part, non-periodic-part, periodic-part)`
+///
+/// # Note
+/// b must not be a perfect square
+///
+/// The returned fraction may be infinitely long (non-zero periodic-part) or
+/// will have a finite length (zero-length periodic-part).
+#[allow(unused_assignments)]
+pub fn continued_fraction(a: i64, b: i64, c: i64) -> (i64, Box<[i64]>, Box<[i64]>) {
+    use std::collections::HashMap;
+
+    // input b cannot be a perfect square
+    assert!(!is_perfect_sq(b));
+
+    let mut a0 = (((b as f64).sqrt() + a as f64) / c as f64).floor() as i64;
+    let mut v0 = c;
+    let mut u0 = -a + a0 * c;
+
+    let integer = a0;
+    let mut components = Vec::new();
+
+    // we can match the start of the periodic part by hashing against a tuple
+    // (a0, u0, v0) against the start index it was encountered.
+    let mut sequence = HashMap::<(i64, i64, i64), usize>::new();
+
+    let mut pidx = 0;
+
+    loop {
+        // An provides the fractional component
+        v0 = (b - u0 * u0) / v0;
+        a0 = (((b as f64).sqrt() + u0 as f64) / (v0 as f64)).floor() as i64;
+        u0 = a0 * v0 - u0;
+
+        let k = (a0, u0, v0);
+
+        // determine if we have encountered this sequence before
+        if sequence.contains_key(&k) {
+            pidx = *sequence.get(&k).unwrap();
+            break;
+        } else {
+            sequence.insert(k, components.len());
+        }
+
+        components.push(a0);
+    }
+
+    let periodic = components.split_off(pidx);
+    (integer, components.into_boxed_slice(), periodic.into_boxed_slice())
 }
 
 pub struct DivisorIterator {
@@ -237,5 +291,16 @@ mod tests {
     fn ext_gcd_01() {
         assert_eq!(extended_gcd(77, -89), (37, 32));
         assert_eq!(extended_gcd(2, 3), (-1, 1))
+    }
+
+    #[test]
+    fn continued_fraction_01() {
+        let solution = continued_fraction(-725, 313, 608);
+        assert_eq!(solution,
+                   (-2,
+                    vec![1, 5].into_boxed_slice(),
+                    vec![8, 5, 1, 3, 1, 1, 2, 2, 1, 1, 3, 1, 5, 8, 1, 2, 17, 2, 1]
+                    .into_boxed_slice())
+        );
     }
 }
