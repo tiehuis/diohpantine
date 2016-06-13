@@ -1,6 +1,6 @@
-# diophantine
+# Diophantine
 
-Provides methods for solving quadratic and linear diophatnine equations.
+Provides methods for solving quadratic and linear diophantine equations.
 
 Diophantine equations are of equations of the form:
 
@@ -8,7 +8,7 @@ Diophantine equations are of equations of the form:
 Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0
 ```
 
-The methods used to solve these are thos specified (here)[https://www.alpertron.com.ar/METHODS.HTM].
+The methods used to solve these are those specified [here](https://www.alpertron.com.ar/METHODS.HTM).
 
 
 ## Examples
