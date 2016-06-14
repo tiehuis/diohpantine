@@ -76,8 +76,8 @@ impl RecurrenceEquation {
     // document that is an iterator and how it can be used.
     #[doc(hidden)]
     pub fn new(x: i64, y: i64,
-               x1: i64, x2: i64, x3: i64,
-               y1: i64, y2: i64, y3: i64) -> RecurrenceEquation {
+               (x1, x2, x3): (i64, i64, i64),
+               (y1, y2, y3): (i64, i64, i64)) -> RecurrenceEquation {
         RecurrenceEquation {
             first_call: true, x: x, y: y,
             x1: x1, x2: x2, x3: x3, y1: y1, y2: y2, y3: y3
@@ -111,5 +111,24 @@ impl fmt::Debug for RecurrenceEquation {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Recurrence({}, {}, {}; {}, {}, {})",
                self.x1, self.x2, self.x3, self.y1, self.y2, self.y3)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn recurrence_01() {
+        // x0 = 1
+        // y0 = 0
+        //
+        // xn+1 = 5*xn + 2*yn
+        // yn+1 = 2*xn + 3*yn - 1
+        let mut eq = RecurrenceEquation::new(1, 0, (5, 2, 0), (2, 3, -1));
+
+        assert_eq!((1, 0), eq.next().unwrap());
+        assert_eq!((5, 1), eq.next().unwrap());
+        assert_eq!((27, 12), eq.next().unwrap());
     }
 }
