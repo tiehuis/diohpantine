@@ -1,20 +1,3 @@
-# Diophantine
-
-Provides methods for solving quadratic and linear diophantine equations.
-
-Diophantine equations are of equations of the form:
-
-```
-Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0
-```
-
-where the solutions `x` and `y` are in the set of integers.
-
-The methods used to solve these are those specified [here](https://www.alpertron.com.ar/METHODS.HTM).
-
-## Examples
-
-```
 extern crate diophantine;
 
 use diophantine::Solution;
@@ -49,5 +32,22 @@ fn main() {
             println!("no solution found");
         }
     }
+
+    // 5x + 7y = 39
+    let sol2 = diophantine::solve_linear(5, 7, 39);
+
+    match sol2 {
+        Solution::Single((x, y)) => {
+            println!("({:?}, {:?})", x, y);
+        }
+
+        Solution::Multiple(x) => {
+            println!("{:?}", x);
+        }
+
+        // The documentation states that `solve_linear` will only return the
+        // variants of type `Solution::Single` and `Solution::Multiple` so we
+        // can discard any other types.
+        _ => unreachable!()
+    }
 }
-```

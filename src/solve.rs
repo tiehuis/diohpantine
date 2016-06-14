@@ -17,7 +17,7 @@ pub enum Solution {
     None,
 
     /// Single Solution
-    Single(Form, Form),
+    Single((Form, Form)),
 
     /// Multiple Solutions
     Multiple(Box<[(Form, Form)]>),
@@ -100,7 +100,7 @@ impl Solution {
     pub fn get_first(&self) -> Option<(i64, i64)> {
         match self {
             &Solution::None => None,
-            &Solution::Single(ref x, ref y) => Some((x.get_first(), y.get_first())),
+            &Solution::Single((ref x, ref y)) => Some((x.get_first(), y.get_first())),
 
             &Solution::Multiple(ref sols) => {
                 assert!(sols.len() > 0);
@@ -146,7 +146,7 @@ fn map_solution_set(mut sols: Vec<(Form, Form)>) -> Solution {
         0 => Solution::None,
         1 => {
             let (x, y) = sols.pop().unwrap();
-            Solution::Single(x, y)
+            Solution::Single((x, y))
         }
         _ => Solution::Multiple(sols.into_boxed_slice())
     }
@@ -162,7 +162,7 @@ pub fn solve_linear(d: i64, e: i64, f: i64) -> Solution {
         (0, 0, f) => {
             // F = 0 => solution iff F == 0
             if f == 0 {
-                Solution::Single(Form::All, Form::All)
+                Solution::Single((Form::All, Form::All))
             } else {
                 Solution::None
             }
@@ -171,7 +171,7 @@ pub fn solve_linear(d: i64, e: i64, f: i64) -> Solution {
         (0, e, f) => {
             // Ey + F = 0 => solution if f | e
             if f % e == 0 {
-                Solution::Single(Form::All, Form::Point(-f / e))
+                Solution::Single((Form::All, Form::Point(-f / e)))
             } else {
                 Solution::None
             }
@@ -180,7 +180,7 @@ pub fn solve_linear(d: i64, e: i64, f: i64) -> Solution {
         (d, 0, f) => {
             // Dx + F = 0 => solution if f | d
             if f % d == 0 {
-                Solution::Single(Form::Point(-f / d), Form::All)
+                Solution::Single((Form::Point(-f / d), Form::All))
             } else {
                 Solution::None
             }
@@ -227,11 +227,11 @@ pub fn solve_simple_hyperbolic(b: i64, d: i64, e: i64, f: i64) -> Solution {
     if d*e - b*f == 0 {
         // Bx + E = 0 => E | B
         if b % e == 0 {
-            Solution::Single(Form::Point(-e / b), Form::All)
+            Solution::Single((Form::Point(-e / b), Form::All))
         }
         // By + D = 0 => E | B
         else if b % d == 0 {
-            Solution::Single(Form::All, Form::Point(-d / b))
+            Solution::Single((Form::All, Form::Point(-d / b)))
         }
         else {
             Solution::None
@@ -365,13 +365,13 @@ pub fn solve_hyperbolic(a: i64, b: i64, c: i64, d: i64, e: i64, f: i64) -> Solut
 
                 // `2ax + (b - sqrt(b^2 - 4ac))y = 0`
                 match solve_linear(2*a, b - ks, 0) {
-                    Solution::Single(x, y) => sols.push((x, y)),
+                    Solution::Single((x, y)) => sols.push((x, y)),
                     _ => ()
                 }
 
                 // `2ax - (b - sqrt(b^2 - 4ac))y = 0`
                 match solve_linear(2*a, b + ks, 0) {
-                    Solution::Single(x, y) => sols.push((x, y)),
+                    Solution::Single((x, y)) => sols.push((x, y)),
                     _ => ()
                 }
             }
@@ -463,7 +463,7 @@ mod tests {
     #[test]
     fn linear_02() {
         let solution = solve_linear(3, 0, 6);
-        assert_eq!(solution, Solution::Single(Form::Point(-2), Form::All));
+        assert_eq!(solution, Solution::Single((Form::Point(-2), Form::All)));
     }
 
     #[test]
@@ -492,7 +492,7 @@ mod tests {
     #[test]
     fn elliptical_01() {
         let solution = solve_elliptical(42, 8, 15, 23, 17, -4915);
-        assert_eq!(solution, Solution::Single(Form::Point(-11), Form::Point(-1)));
+        assert_eq!(solution, Solution::Single((Form::Point(-11), Form::Point(-1))));
     }
 
     #[test]

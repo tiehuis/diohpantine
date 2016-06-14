@@ -12,5 +12,5 @@ license = "MIT/Apache"
 [dependencies]
 
 [[bin]]
-name = "main"
-path = "src/main.rs"
+name = "ex_01"
+path = "examples/ex_01.rs"

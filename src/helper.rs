@@ -93,9 +93,6 @@ pub fn extended_gcd(x: i64, y: i64) -> (i64, i64) {
         b = z3;
     }
 
-    println!("{} {}: {} {}: {} {}", a, b, m, n, p, q);
-    println!("{} {}", b, n);
-
     // Always return (-, +) parity if given the choice. This is what is
     // usually expected in the solve phase.
     if b >= 0 && a < 0 {
